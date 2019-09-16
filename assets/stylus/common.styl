@@ -1,0 +1,173 @@
+@charset "utf-8"
+@require "./basic"
+
+.crm
+  &.main
+    padding-top 50px
+    padding-left 188px
+  &-topbar,
+  &-sidebar
+    position fixed
+    z-index 2000
+    left 0
+  &-topbar
+    height 50px
+    display flex
+    background $color-background
+    top 0
+    width 100%
+    color $color-white
+    overflow hidden
+    .item
+      height 50px
+      line-height 50px
+      text-align center
+      flex 1
+      &.brand
+        flex 0 0 188px
+      &:hover
+       background $color-hover-black
+       cursor pointer
+      &:nth-child(2):hover{
+        background $color-background
+      }
+  &-sidebar
+    top 50px
+    bottom 0px
+    width 188px
+    overflow-x hidden
+    overflow-y auto
+    background $color-background-l
+    color $color-white
+    .el-menu
+      border-right 0px
+      i
+        color #fff !important
+      .el-submenu.el-menu-item,
+      .el-submenu__title
+        height 48px
+        line-height 48px
+      .el-submenu__title
+        font-size $fontsize-medium
+      .el-menu-item
+        font-size $fontsize-small
+      .el-submenu__title i
+        font-size $fontsize-medium-s
+      .el-menu-item.is-active,
+      .el-submenu__title:hover
+        background $color-main !important
+  &-content
+    padding 15px 15px
+    color $color-main-ll
+
+.el-submenu i.iconfont
+  vertical-align: middle;
+  margin-right: 5px;
+  width: 24px;
+  text-align: center;
+  font-size: 18px;
+.el-breadcrumb
+  span.el-breadcrumb__inner
+    color $color-light-grey
+  i.el-breadcrumb__separator
+    font-size $fontsize-medium
+    font-weight bold
+    color $color-grey-l
+.no-border.el-input .el-input__inner
+  border 0px !important
+.el-input__inner
+  border-radius 0px !important
+
+.el-button
+  [class*=iconfont]+span
+    margin-left 5px
+  &.el-button--small
+    [class*=iconfont]
+      font-size $fontsize-small
+.crm-table-head-bg
+  background-color #f5f7fa !important
+.max-300
+  max-width 300px
+.max-330
+  max-width 330px
+.zoom-img.el-dialog.el-dialog--center
+  width 1075px
+  .el-dialog__body
+    width 1075px
+    box-sizing border-box
+    overflow auto
+    text-align center
+.crm-simple-upload .el-upload-list.el-upload-list--text
+  display none
+.crm-time-limit .el-range-separator
+    width: 20px
+.cust-sales-pie
+  canvas
+    margin 0 auto
+    height 420px
+.crm-content{
+  min-width: 1250px;
+}
+.el-table tr.loss-cstm{
+  background: #fdf5e6;
+}
+.el-table tr.communicate-cstm{
+  background: #f1ffe8;
+}
+.crm-table-required .cell:after{
+  content: '*';
+  color: red;
+}
+.pointer .el-badge__content{
+    line-height: 14px;
+  }
+.symbol .el-select.el-select--mini{
+  width: 55px;
+  height: 32px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px #ccc solid;
+  margin-top: 1;
+  position: relative;
+  top: 10px;
+  padding: 2px 0;
+  margin-left: 10px;
+}
+.symbol input{
+  border: none;
+}
+.validFormal .el-form-item__label:before{
+  content: '*';
+  color: #00a1ff;
+  margin-right: 4px;
+}
+.el-table--striped .el-table__body tr.el-table__row--striped.current-row td, .el-table__body tr.current-row>td, .el-table__body tr.hover-row.current-row>td, .el-table__body tr.hover-row.el-table__row--striped.current-row>td, .el-table__body tr.hover-row.el-table__row--striped>td, .el-table__body tr.hover-row>td{
+  background-color: #f5f5f5;
+}
+*::-webkit-scrollbar {
+  width:7px; 
+  height:10px; 
+  background-color:transparent;
+} /*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+*::-webkit-scrollbar-track {
+  background-color:#f0f6ff; 
+} /*定义滚动条轨道 内阴影+圆角*/
+*::-webkit-scrollbar-thumb {
+  background-color:rgba(0,0,0,.3); 
+  border-radius:6px;
+} /*定义滑块 内阴影+圆角*/
+// .el-table__body-wrapper:hover::-webkit-scrollbar{
+//   display: block;
+// }
+// .el-table__body-wrapper::-webkit-scrollbar{
+//   display: none
+// }
+// .scrollbarHide::-webkit-scrollbar{display: none}
+// .scrollbarShow::-webkit-scrollbar{display: block}
+.taskInfoDetail .el-collapse {
+  border-bottom: none
+}
+
+.product-ipt-place .el-input__inner
+  border 0px
+  border-bottom 1px solid #DCDFE6
