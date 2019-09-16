@@ -50,7 +50,7 @@ module.exports = {
     // See https://github.com/nuxt-community/axios-module#options
   },
   server: {
-    port: 8000, // default: 3000
+    port: 7788, // default: 3000
     host: '0.0.0.0', // default: localhost,
     timing: false
   },
