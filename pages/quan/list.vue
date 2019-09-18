@@ -159,6 +159,7 @@ export default {
         this.pageHide(this)
         if (data.return_code === 0) {
           this.tableValue.tableData = data.list
+          this.total = data.total
         } else {
           this.msgShow(this, data.msg)
         }
