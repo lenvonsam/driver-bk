@@ -97,7 +97,7 @@ export default {
           this.product.endDate = new Date(this.product.endDate)
           console.log('product:>>', this.product)
           this.infoFirst = this.product.info.substring(
-            this.product.info.indexOf('兑换一张免费的') + 7,
+            this.product.info.indexOf('积分兑换一张免费的') + 9,
             this.product.info.indexOf('券，')
           )
           this.infoSec = this.product.info.substring(
