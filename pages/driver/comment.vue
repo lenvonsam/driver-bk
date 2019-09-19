@@ -41,7 +41,7 @@ export default {
             prop: 'starLine'
           },
           {
-            lbl: '协助秩序',
+            lbl: '协助扫码',
             prop: 'starAssist'
           },
           {
