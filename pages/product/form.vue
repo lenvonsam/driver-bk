@@ -33,10 +33,10 @@
         el-row
           el-col(:span="12")
             el-form-item(label="开始日期", prop="startDate")
-              el-date-picker(v-model="product.startDate", value-format="yyyy-MM-dd HH:mm:ss")
+              el-date-picker(v-model="product.startDate", value-format="yyyy-MM-dd HH:mm:ss", format="yyyy-MM-dd")
           el-col(:span="12")
             el-form-item(label="结束日期", prop="endDate")
-              el-date-picker(v-model="product.endDate", value-format="yyyy-MM-dd HH:mm:ss")
+              el-date-picker(v-model="product.endDate", value-format="yyyy-MM-dd HH:mm:ss", format="yyyy-MM-dd")
         el-row
           el-col(:span="12")
             el-form-item(label="期限说明", prop="dayCount")
@@ -83,9 +83,7 @@ export default {
   beforeMount() {
     console.log(this.$route)
     this.routeType = this.$route.query.type || ''
-    if (this.routeType === 'edit') {
-      this.getProductInfo()
-    }
+    if (this.routeType === 'edit') this.getProductInfo()
   },
   methods: {
     async getProductInfo() {
@@ -95,6 +93,9 @@ export default {
         })
         if (data.return_code === 0) {
           this.product = Object.assign({}, data.obj)
+          this.product.startDate = new Date(this.product.startDate)
+          this.product.endDate = new Date(this.product.endDate)
+          console.log('product:>>', this.product)
           this.infoFirst = this.product.info.substring(
             this.product.info.indexOf('兑换一张免费的') + 7,
             this.product.info.indexOf('券，')
@@ -131,14 +132,22 @@ export default {
         this.pageShow(this, '处理中..')
         const body = Object.assign({}, this.product)
         let prefix = '/proxy/common/post'
+        console.log(typeof body.startDate)
+        if (typeof body.startDate === 'object') {
+          body.startDate = this.date2Str(body.startDate)
+        }
+        if (typeof body.endDate === 'object') {
+          body.endDate = this.date2Str(body.endDate)
+        }
+        body.startDate =
+          body.startDate.toString().substring(0, 10) + ' 00:00:00'
+        body.endDate = body.endDate.toString().substring(0, 10) + ' 23:59:59'
         if (this.routeType === 'edit') {
           prefix = '/proxy/common/put'
           delete body.createAt
           delete body.updateAt
-          if (body.startDate.length === 10) body.startDate += ' 00:00:00'
-          if (body.endDate.length === 10) body.endDate += ' 23:59:59'
         }
-        body.info = `${body.integral}兑换一张免费的${this.infoFirst}券，可用于${this.infoSec}抵扣，可到我的卡券查看使用`
+        body.info = `${body.integral}积分兑换一张免费的${this.infoFirst}券，可用于${this.infoSec}抵扣，可到我的卡券查看使用`
         body.rangeInfo = `领取之日起${body.dayCount}天内有效`
         const { data } = await this.apiStreamPost(prefix, {
           url: this.apiList.local.product,
