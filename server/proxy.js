@@ -12,10 +12,8 @@ const router = express.Router()
 const app = express()
 const hptl = require('../utils/httpUtil')
 
-// const proxyUrl = 'http://192.168.80.211:8080/'  // tomcat
-// const proxyUrl = 'http://192.168.80.149:8080/'  // jboss
 // const proxyUrl = 'http://172.16.120.203:8080/'
-const proxyUrl = 'http://192.168.80.99:8080/driver-bk/'
+const proxyUrl = 'http://192.168.20.148:8080/driver-bk/'
 
 router.use((req, res, next) => {
   Object.setPrototypeOf(req, app.request)
