@@ -13,8 +13,7 @@ const app = express()
 const hptl = require('../utils/httpUtil')
 
 // const proxyUrl = 'http://localhost:6889/'
-const proxyUrl = 'http://192.168.80.99:8080/driver-bk/'
-// const proxyUrl = 'http://appadmin-test.xingyun361.com/driver-bk/'
+const proxyUrl = 'http://192.168.20.148:8080/driver-bk/'
 
 router.use((req, res, next) => {
   Object.setPrototypeOf(req, app.request)
