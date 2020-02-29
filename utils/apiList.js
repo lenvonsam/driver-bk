@@ -11,6 +11,8 @@ export default {
     // 票券核销
     quanCheck: '/api/quan/check',
     // 签到记录
-    driverRecord: '/api/wuhan/driver/record'
+    driverRecord: '/api/wuhan/driver/record',
+    // 当天签到记录
+    driverDayRecordCount: '/api/wuhan/$/driver/recordDayCount'
   }
 }

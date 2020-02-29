@@ -43,24 +43,24 @@ export default {
       formArray: [
         {
           lbl: '姓名',
-          disabled: true,
+          disabled: false,
           key: 'name'
         },
         {
           lbl: '身份证号',
-          disabled: true,
+          disabled: false,
           type: 'text',
           key: 'idNo'
         },
         {
           lbl: '手机号码',
-          disabled: true,
+          disabled: false,
           key: 'phone',
           type: 'text'
         },
         {
           lbl: '车牌号',
-          disabled: true,
+          disabled: false,
           key: 'carNo',
           type: 'text'
         },
@@ -124,16 +124,53 @@ export default {
             this.remoteObj = JSON.parse(message.text)
             console.log('remoteObj:>>', this.remoteObj)
             this.$refs.wuhanForm.resetFields()
-            this.formObj.name = this.remoteObj.name
-            this.formObj.phone = this.remoteObj.phone
-            this.formObj.idNo = this.remoteObj.idNo
-            this.formObj.carNo = this.remoteObj.carNo
-            console.log('this.formObj:>>', this.formObj)
-            this.$forceUpdate()
+            this.getDayRecordCount()
           }
         })
       } catch (err) {
         this.msgShow(this, err)
+      }
+    },
+    async getDayRecordCount() {
+      try {
+        const url = this.apiList.local.driverDayRecordCount.replace(
+          '$',
+          this.remoteObj.id
+        )
+        const { data } = await this.apiStreamPost(
+          '/proxy/common/get',
+          {
+            url: url
+          },
+          'get'
+        )
+        console.log('data', data)
+        if (data.return_code === 0 && data.count > 0) {
+          await this.apiStreamPost(
+            '/proxy/common/post',
+            {
+              url: this.apiList.local.driverRecord,
+              params: this.remoteObj
+            },
+            'post'
+          )
+          this.remoteObj = {}
+          this.kickUser('kickUser')
+          this.msgShow(this, '此人今天已测过体温')
+        } else {
+          this.formObj.name = this.remoteObj.name
+          this.formObj.phone = this.remoteObj.phone
+          this.formObj.idNo = this.remoteObj.idNo
+          this.formObj.carNo = this.remoteObj.carNo
+        }
+        this.$forceUpdate()
+      } catch (e) {
+        console.error(e)
+        this.formObj.name = this.remoteObj.name
+        this.formObj.phone = this.remoteObj.phone
+        this.formObj.idNo = this.remoteObj.idNo
+        this.formObj.carNo = this.remoteObj.carNo
+        this.$forceUpdate()
       }
     },
     submitForm(formName) {
@@ -148,16 +185,30 @@ export default {
     },
     async remoteRecord() {
       try {
-        if (this.numReg.test(this.formObj.temperature)) {
+        if (!this.mobileReg(this.formObj.phone)) {
+          this.msgShow(this, '请输入正确的手机号')
+          return
+        }
+        if (!this.idNoReg(this.formObj.idNo)) {
+          this.msgShow(this, '请输入正确身份证号')
+          return
+        }
+        if (!this.numReg.test(this.formObj.temperature)) {
           this.msgShow(this, '温度最多两位小数')
           return
         }
-        this.remoteObj.temperature = this.formObj.temperature
+        if (!this.remoteObj.id > 0) {
+          this.msgShow(this, '非法数据，无法提交')
+          return
+        }
         this.remoteObj.hasCouch = this.formObj.hasCouch
         this.remoteObj.hasException = this.formObj.hasException
         this.remoteObj.remark = this.formObj.remark
         this.remoteObj.carNo = this.formObj.carNo
         this.remoteObj.temperature = Number(this.formObj.temperature).toFixed(2)
+        this.remoteObj.name = this.formObj.name
+        this.remoteObj.idNo = this.formObj.idNo
+        this.remoteObj.phone = this.formObj.phone
         const { data } = await this.apiStreamPost(
           '/proxy/common/post',
           {
