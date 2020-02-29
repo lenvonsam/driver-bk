@@ -1,24 +1,17 @@
 <template lang="pug">
-.wuhan-container  
-  //- .col
-  //-   .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
-  //-     .icon
-  //- .col
-  //-   div 123
+.wuhan-container.vertical
   .header
     .col
       .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
         .icon 
   .body
     .ft-20.ft-bold.text-left 登记信息
-    el-form.mt-30(label-width="120px", size="small", :rules="formRules" ,ref="wuhanForm", :model="formObj")
-      .row(v-for="(rowItem, rowIdx) in formArray", :key="rowIdx")
-        .col(v-for="(item, idx) in rowItem", :key="idx")
-          el-form-item(:label="item.lbl", :prop="item.key")
-            el-select(v-if="item.type === 'select'", v-model="formObj[item.key]", style="width: 100%")
-              el-option(v-for="(opts, optIdx) in item.selectArr", :label="opts.lbl", :value="opts.val", :key="optIdx")
-            el-input-number.full-width(:disabled="item.disabled", v-else-if="item.type==='number'", v-model="formObj[item.key]", type="number", :min="34.5", :max="45", :step="0.1")
-            el-input(:disabled="item.disabled", v-else, v-model="formObj[item.key]")
+    el-form.mt-30(label-width="120px", size="large", :rules="formRules" ,ref="wuhanForm", :model="formObj")
+      el-form-item(:label="item.lbl", v-for="(item,idx) in formArray", :key="idx", :prop="item.key")
+        el-select(v-if="item.type === 'select'", v-model="formObj[item.key]", style="width: 100%")
+          el-option(v-for="(opts, optIdx) in item.selectArr", :label="opts.lbl", :value="opts.val", :key="optIdx")
+        el-input-number.full-width(:disabled="item.disabled", v-else-if="item.type==='number'", v-model="formObj[item.key]", type="number", :min="34.5", :max="45", :step="0.1")
+        el-input(:disabled="item.disabled", v-else, v-model="formObj[item.key]")
       el-form-item
         el-button(type="primary", @click="submitForm('wuhanForm')") 提交
         el-button.ml-15(@click="resetForm('wuhanForm')") 重置
@@ -47,74 +40,72 @@ export default {
         phone: [{ required: true, message: '手机号不能为空', trigger: 'blur' }]
       },
       formArray: [
-        [
-          {
-            lbl: '姓名',
-            disabled: true,
-            key: 'name'
-          },
-          {
-            lbl: '身份证号',
-            disabled: true,
-            type: 'text',
-            key: 'idNo'
-          }
-        ],
-        [
-          {
-            lbl: '手机号码',
-            disabled: true,
-            key: 'phone',
-            type: 'text'
-          },
-          {
-            lbl: '当前体温',
-            key: 'temperature',
-            disabled: false,
-            require: true,
-            type: 'number'
-          }
-        ],
-        [
-          {
-            lbl: '是否咳嗽',
-            type: 'select',
-            key: 'hasCouch',
-            selectArr: [
-              {
-                lbl: '否',
-                val: '否'
-              },
-              {
-                lbl: '是',
-                val: '是'
-              }
-            ]
-          },
-          {
-            lbl: '是否有其他异常',
-            type: 'select',
-            key: 'hasException',
-            selectArr: [
-              {
-                lbl: '否',
-                val: '否'
-              },
-              {
-                lbl: '是',
-                val: '是'
-              }
-            ]
-          }
-        ],
-        [
-          {
-            lbl: '备注',
-            key: 'remark',
-            type: 'text',
-            disabled: false
-          }
-        ]
+        {
+          lbl: '姓名',
+          disabled: true,
+          key: 'name'
+        },
+        {
+          lbl: '身份证号',
+          disabled: true,
+          type: 'text',
+          key: 'idNo'
+        },
+        {
+          lbl: '手机号码',
+          disabled: true,
+          key: 'phone',
+          type: 'text'
+        },
+        {
+          lbl: '车牌号',
+          disabled: true,
+          key: 'carNo',
+          type: 'text'
+        },
+        {
+          lbl: '当前体温',
+          key: 'temperature',
+          disabled: false,
+          require: true,
+          type: 'number'
+        },
+        {
+          lbl: '是否咳嗽',
+          type: 'select',
+          key: 'hasCouch',
+          selectArr: [
+            {
+              lbl: '否',
+              val: '否'
+            },
+            {
+              lbl: '是',
+              val: '是'
+            }
+          ]
+        },
+        {
+          lbl: '是否有其他异常',
+          type: 'select',
+          key: 'hasException',
+          selectArr: [
+            {
+              lbl: '否',
+              val: '否'
+            },
+            {
+              lbl: '是',
+              val: '是'
+            }
+          ]
+        },
+        {
+          lbl: '备注',
+          key: 'remark',
+          type: 'text',
+          disabled: false
+        }
       ],
       remoteObj: {}
     }
@@ -128,13 +119,15 @@ export default {
         const client = await this.lcLogin()
         client.on(Event.MESSAGE, (message, conv) => {
           console.log('conv message', message)
-          console.log('conv', conv)
           if (message.type === -1 && message.from === 'whdriver') {
             this.remoteObj = JSON.parse(message.text)
             console.log('remoteObj:>>', this.remoteObj)
+            this.resetForm('wuhanForm')
             this.formObj.name = this.remoteObj.name
             this.formObj.phone = this.remoteObj.phone
             this.formObj.idNo = this.remoteObj.idNo
+            this.formObj.carNo = this.remoteObj.carNo
+            console.log('this.formObj:>>', this.formObj)
             this.$forceUpdate()
           }
         })
@@ -158,6 +151,7 @@ export default {
         this.remoteObj.hasCouch = this.formObj.hasCouch
         this.remoteObj.hasException = this.formObj.hasException
         this.remoteObj.remark = this.formObj.remark
+        this.remoteObj.carNo = this.formObj.carNo
         const { data } = await this.apiStreamPost(
           '/proxy/common/post',
           {
@@ -195,7 +189,12 @@ export default {
   width 100%
   overflow hidden
   height 100vh
-  // display flex
+  &.vertical
+    display flex
+    align-items center
+    .header
+      height 100vh
+      width 700px
   .header
     height 400px
     background #409EFF
@@ -218,9 +217,11 @@ export default {
         top 0px
         z-index 50
   .body
-    max-width 700px
+    max-width 500px
     margin 0 auto
     padding 15px
     /deep/ .el-form-item__label
       font-weight bold
+    /deep/ .el-input input
+      font-size 20px
 </style>
