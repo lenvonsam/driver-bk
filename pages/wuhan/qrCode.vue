@@ -108,7 +108,8 @@ export default {
           disabled: false
         }
       ],
-      remoteObj: {}
+      remoteObj: {},
+      recordCount: 0
     }
   },
   beforeMount() {
@@ -145,6 +146,7 @@ export default {
           'get'
         )
         console.log('data', data)
+        this.recordCount = data.count || 0
         if (data.return_code === 0 && data.count > 0) {
           await this.apiStreamPost(
             '/proxy/common/post',
@@ -170,6 +172,7 @@ export default {
         this.formObj.phone = this.remoteObj.phone
         this.formObj.idNo = this.remoteObj.idNo
         this.formObj.carNo = this.remoteObj.carNo
+        this.recordCount = 0
         this.$forceUpdate()
       }
     },
@@ -197,7 +200,7 @@ export default {
           this.msgShow(this, '温度最多两位小数')
           return
         }
-        if (!this.remoteObj.id > 0) {
+        if (!this.remoteObj.id > 0 && this.recordCount > 0) {
           this.msgShow(this, '非法数据，无法提交')
           return
         }

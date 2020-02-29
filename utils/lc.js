@@ -1,9 +1,14 @@
 const { Realtime, TextMessage } = require('leancloud-realtime')
 
 const realTime = new Realtime({
+  // dev
   appId: 'Gy7tNhrlrQOv1fhDK5pnvrOm-gzGzoHsz',
   appKey: 'xefikoI4r3PC7JwrsdQhPF7u',
   server: 'https://gy7tnhrl.lc-cn-n1-shared.com'
+  // prod
+  // appId: '1gJuzwa4VUs9JxVUjQGTFNLw-gzGzoHsz',
+  // appKey: 'H9q5UVpG79STJ2NvhXuV9QhG',
+  // server: 'https://1gjuzwa4.lc-cn-n1-shared.com'
 })
 
 let currentClient = null
