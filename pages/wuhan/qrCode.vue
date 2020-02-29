@@ -22,6 +22,7 @@ export default {
   data() {
     return {
       img: require('../../static/imgs/qrcode.jpg'),
+      numReg: /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/,
       formObj: {
         name: '',
         idNo: '',
@@ -147,11 +148,16 @@ export default {
     },
     async remoteRecord() {
       try {
+        if (this.numReg.test(this.formObj.temperature)) {
+          this.msgShow(this, '温度最多两位小数')
+          return
+        }
         this.remoteObj.temperature = this.formObj.temperature
         this.remoteObj.hasCouch = this.formObj.hasCouch
         this.remoteObj.hasException = this.formObj.hasException
         this.remoteObj.remark = this.formObj.remark
         this.remoteObj.carNo = this.formObj.carNo
+        this.remoteObj.temperature = Number(this.formObj.temperature).toFixed(2)
         const { data } = await this.apiStreamPost(
           '/proxy/common/post',
           {
