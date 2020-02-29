@@ -122,7 +122,7 @@ export default {
           if (message.type === -1 && message.from === 'whdriver') {
             this.remoteObj = JSON.parse(message.text)
             console.log('remoteObj:>>', this.remoteObj)
-            this.resetForm('wuhanForm')
+            this.$refs.wuhanForm.resetFields()
             this.formObj.name = this.remoteObj.name
             this.formObj.phone = this.remoteObj.phone
             this.formObj.idNo = this.remoteObj.idNo
