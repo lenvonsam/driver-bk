@@ -1,7 +1,7 @@
 const axios = require('axios')
 const Qs = require('qs')
 const sha1 = require('sha1')
-module.exports = {
+const obj = {
   proxyToken(key) {
     let date = new Date()
     if (date.getTimezoneOffset() !== -480) {
@@ -41,10 +41,10 @@ module.exports = {
     })
   },
   httpPut(url, body) {
-    return this.commonHttp('put', url, body)
+    return obj.commonHttp('put', url, body)
   },
   httpPost(url, body) {
-    return this.commonHttp('post', url, body)
+    return obj.commonHttp('post', url, body)
   },
   httpPostForm(url, body) {
     return axios({
@@ -61,9 +61,11 @@ module.exports = {
     })
   },
   httpDelete(url, body) {
-    return this.commonHttp('delete', url, body)
+    return obj.commonHttp('delete', url, body)
   },
   httpStreamPost(url, body) {
     return axios.post(url, body)
   }
 }
+
+module.exports = obj
