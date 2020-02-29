@@ -1,5 +1,10 @@
 <template lang="pug">
 .wuhan-container  
+  //- .col
+  //-   .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
+  //-     .icon
+  //- .col
+  //-   div 123
   .header
     .col
       .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
@@ -7,11 +12,13 @@
   .body
     .ft-20.ft-bold.text-left 登记信息
     el-form.mt-30(label-width="120px", size="small", :rules="formRules" ,ref="wuhanForm", :model="formObj")
-      el-form-item(:label="item.lbl", v-for="(item, idx) in formArray", :key="idx",:prop="item.key")
-        el-select(v-if="item.type === 'select'", v-model="formObj[item.key]", style="width: 100%")
-          el-option(v-for="(opts, optIdx) in item.selectArr", :label="opts.lbl", :value="opts.val", :key="optIdx")
-        el-input-number.full-width(:disabled="item.disabled", v-else-if="item.type==='number'", v-model="formObj[item.key]", type="number", :min="34.5", :max="45", :step="0.1")
-        el-input(:disabled="item.disabled", v-else, v-model="formObj[item.key]")
+      .row(v-for="(rowItem, rowIdx) in formArray", :key="rowIdx")
+        .col(v-for="(item, idx) in rowItem", :key="idx")
+          el-form-item(:label="item.lbl", :prop="item.key")
+            el-select(v-if="item.type === 'select'", v-model="formObj[item.key]", style="width: 100%")
+              el-option(v-for="(opts, optIdx) in item.selectArr", :label="opts.lbl", :value="opts.val", :key="optIdx")
+            el-input-number.full-width(:disabled="item.disabled", v-else-if="item.type==='number'", v-model="formObj[item.key]", type="number", :min="34.5", :max="45", :step="0.1")
+            el-input(:disabled="item.disabled", v-else, v-model="formObj[item.key]")
       el-form-item
         el-button(type="primary", @click="submitForm('wuhanForm')") 提交
         el-button.ml-15(@click="resetForm('wuhanForm')") 重置
@@ -21,7 +28,7 @@ import { Event } from 'leancloud-realtime'
 export default {
   data() {
     return {
-      img: require('../../static/imgs/qrcode.png'),
+      img: require('../../static/imgs/qrcode.jpg'),
       formObj: {
         name: '',
         idNo: '',
@@ -34,69 +41,80 @@ export default {
       formRules: {
         temperature: [
           { required: true, message: '体温不能为空', trigger: 'blur' }
-        ]
+        ],
+        name: [{ required: true, message: '名字不能为空', trigger: 'blur' }],
+        idNo: [{ required: true, message: '身份证不能为空', trigger: 'blur' }],
+        phone: [{ required: true, message: '手机号不能为空', trigger: 'blur' }]
       },
       formArray: [
-        {
-          lbl: '姓名',
-          disabled: true,
-          key: 'name'
-        },
-        {
-          lbl: '身份证号',
-          disabled: true,
-          type: 'text',
-          key: 'idNo'
-        },
-        {
-          lbl: '手机号码',
-          disabled: true,
-          key: 'phone',
-          type: 'text'
-        },
-        {
-          lbl: '当前体温',
-          key: 'temperature',
-          disabled: false,
-          require: true,
-          type: 'number'
-        },
-        {
-          lbl: '是否咳嗽',
-          type: 'select',
-          key: 'hasCouch',
-          selectArr: [
-            {
-              lbl: '否',
-              val: '否'
-            },
-            {
-              lbl: '是',
-              val: '是'
-            }
-          ]
-        },
-        {
-          lbl: '是否有其他异常',
-          type: 'select',
-          key: 'hasException',
-          selectArr: [
-            {
-              lbl: '否',
-              val: '否'
-            },
-            {
-              lbl: '是',
-              val: '是'
-            }
-          ]
-        },
-        {
-          lbl: '备注',
-          key: 'remark',
-          type: 'text',
-          disabled: false
-        }
+        [
+          {
+            lbl: '姓名',
+            disabled: true,
+            key: 'name'
+          },
+          {
+            lbl: '身份证号',
+            disabled: true,
+            type: 'text',
+            key: 'idNo'
+          }
+        ],
+        [
+          {
+            lbl: '手机号码',
+            disabled: true,
+            key: 'phone',
+            type: 'text'
+          },
+          {
+            lbl: '当前体温',
+            key: 'temperature',
+            disabled: false,
+            require: true,
+            type: 'number'
+          }
+        ],
+        [
+          {
+            lbl: '是否咳嗽',
+            type: 'select',
+            key: 'hasCouch',
+            selectArr: [
+              {
+                lbl: '否',
+                val: '否'
+              },
+              {
+                lbl: '是',
+                val: '是'
+              }
+            ]
+          },
+          {
+            lbl: '是否有其他异常',
+            type: 'select',
+            key: 'hasException',
+            selectArr: [
+              {
+                lbl: '否',
+                val: '否'
+              },
+              {
+                lbl: '是',
+                val: '是'
+              }
+            ]
+          }
+        ],
+        [
+          {
+            lbl: '备注',
+            key: 'remark',
+            type: 'text',
+            disabled: false
+          }
+        ]
       ],
       remoteObj: {}
     }
@@ -151,6 +169,7 @@ export default {
         console.log('data', data)
         if (data.return_code === 0) {
           this.msgShow(this, '签到成功', 'success')
+          this.remoteObj = {}
           this.resetForm('wuhanForm', 'signed')
         } else {
           this.msgShow(this, data.errMsg)
@@ -175,6 +194,8 @@ export default {
 .wuhan-container
   width 100%
   overflow hidden
+  height 100vh
+  // display flex
   .header
     height 400px
     background #409EFF
@@ -182,22 +203,22 @@ export default {
     align-items center
     justify-content center
     .qrcode
-      width 200px
-      height 200px
+      width 290px
+      height 320px
       margin 0 auto
       position relative
       background-size cover
       .icon
         position absolute
-        height 200px
-        width 200px
+        height 250px
+        width 250px
         background-image url('../../static/imgs/temperature.png')
         background-size cover
-        right -170px
+        right -213px
         top 0px
         z-index 50
   .body
-    max-width 380px
+    max-width 700px
     margin 0 auto
     padding 15px
     /deep/ .el-form-item__label
