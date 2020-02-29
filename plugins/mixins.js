@@ -2,6 +2,7 @@ import Vue from 'vue'
 import httpUtil from '../utils/httpUtil'
 import elementUtil from '../utils/elmtUtil'
 import apiList from '../utils/apiList'
+import lcUtil from '../utils/lc'
 
 function formatNumber(n) {
   n = n.toString()
@@ -14,7 +15,9 @@ const minixs = {
       apiList,
       phoneReg: /^1[345789]\d{9}$/,
       gPageSize: 8,
-      fileUploadUrl: '/proxy/fileUpload'
+      fileUploadUrl: '/proxy/fileUpload',
+      lcProxyUrl:
+        'https://mobileapp.xingyun361.com/quasarserverdev/common/ld/realtime'
       // bkProxyUrl: 'http://localhost:8668/api/'
     }
   },
@@ -182,7 +185,10 @@ const minixs = {
     },
     mobileReg(mobile) {
       return this.phoneReg.test(mobile)
-    }
+    },
+    // leanclound
+    lcLogin: lcUtil.login,
+    lcText: lcUtil.sendTextMsg
   }
 }
 Vue.mixin(minixs)

@@ -12,8 +12,9 @@ const router = express.Router()
 const app = express()
 const hptl = require('../utils/httpUtil')
 
-// const proxyUrl = 'http://172.16.120.203:8080/'
-const proxyUrl = 'http://192.168.20.148:8080/driver-bk/'
+// const proxyUrl = 'http://localhost:6889/'
+// const proxyUrl = 'http://192.168.80.99:8080/driver-bk/'
+const proxyUrl = 'http://appadmin-test.xingyun361.com/driver-bk/'
 
 router.use((req, res, next) => {
   Object.setPrototypeOf(req, app.request)
@@ -32,7 +33,7 @@ router.post('/login', (req, res) => {
   const body = req.body
   console.log('session user:>>', req.session.currentUser)
   console.log('body:>>', body)
-  if (body.username === 'admin' && body.pwd === "admin") {
+  if (body.username === 'admin' && body.pwd === 'admin') {
     req.session.currentUser = {
       id: 1,
       name: '管理员'
@@ -46,7 +47,7 @@ router.post('/login', (req, res) => {
 router.post('/fileUpload', multipartMiddleware, (req, res) => {
   console.log('file upload req:>>', req.files)
   const url_parts = url.parse(req.url, true)
-  var action = ''
+  let action = ''
   if (req.body.action) {
     action = req.body.action
   } else {

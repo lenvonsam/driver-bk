@@ -9,6 +9,8 @@ export default {
     // 票券列表
     quan: '/api/quan',
     // 票券核销
-    quanCheck: '/api/quan/check'
+    quanCheck: '/api/quan/check',
+    // 签到记录
+    driverRecord: '/api/wuhan/driver/record'
   }
 }
