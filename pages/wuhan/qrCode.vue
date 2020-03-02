@@ -158,7 +158,8 @@ export default {
           )
           this.remoteObj = {}
           this.kickUser('kickUser')
-          this.msgShow(this, '此人今天已测过体温')
+          this.confirmDialog(this, '此人今天已测过体温')
+          // this.msgShow(this, '此人今天已测过体温')
         } else {
           this.formObj.name = this.remoteObj.name
           this.formObj.phone = this.remoteObj.phone
