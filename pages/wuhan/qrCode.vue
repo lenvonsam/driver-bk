@@ -15,6 +15,7 @@
       el-form-item
         el-button(type="primary", @click="submitForm('wuhanForm')") 提交
         el-button.ml-15(@click="resetForm('wuhanForm')") 重置
+        el-button.ml-15(type="danger", @click="forceExit('wuhanForm')") 强制踢出 
 </template>
 <script>
 import { Event } from 'leancloud-realtime'
@@ -176,6 +177,33 @@ export default {
         this.recordCount = 0
         this.$forceUpdate()
       }
+    },
+    forceExit(formName) {
+      const me = this
+      this.confirmDialog(
+        this,
+        '您确定要踢出司机吗？踢出之后，系统需要3-5分钟的恢复时间',
+        {},
+        'warning',
+        '谨慎使用'
+      )
+        .then(res => {
+          me.$refs[formName].resetFields()
+          me.apiPost(
+            'https://mobileapp.xingyun361.com/quasarserverdev/common/ld/realtime',
+            {
+              url: 'client/kick',
+              body: JSON.stringify({
+                client_id: 'wudriver',
+                reason: 'force exist'
+              })
+            }
+          )
+          me.msgShow(me, '踢出成功，请耐心等待', 'success')
+        })
+        .catch(() => {
+          console.log('cancel')
+        })
     },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
