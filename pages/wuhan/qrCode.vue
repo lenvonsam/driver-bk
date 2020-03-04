@@ -20,7 +20,7 @@
 <script>
 import { Event } from 'leancloud-realtime'
 export default {
-  data() {
+  data () {
     return {
       img: require('../../static/imgs/qrcode.jpg'),
       numReg: /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/,
@@ -113,11 +113,11 @@ export default {
       recordCount: 0
     }
   },
-  beforeMount() {
+  beforeMount () {
     this.remoteLogin()
   },
   methods: {
-    async remoteLogin() {
+    async remoteLogin () {
       try {
         const client = await this.lcLogin()
         client.on(Event.MESSAGE, (message, conv) => {
@@ -133,7 +133,7 @@ export default {
         this.msgShow(this, err)
       }
     },
-    async getDayRecordCount() {
+    async getDayRecordCount () {
       try {
         const url = this.apiList.local.driverDayRecordCount.replace(
           '$',
@@ -178,7 +178,7 @@ export default {
         this.$forceUpdate()
       }
     },
-    forceExit(formName) {
+    forceExit (formName) {
       const me = this
       this.confirmDialog(
         this,
@@ -190,7 +190,7 @@ export default {
         .then(res => {
           me.$refs[formName].resetFields()
           me.apiPost(
-            'https://mobileapp.xingyun361.com/quasarserverdev/common/ld/realtime',
+            'https://mobileapp.xingyun361.com/quasarserver/common/ld/realtime',
             {
               url: 'client/kick',
               body: JSON.stringify({
@@ -205,7 +205,7 @@ export default {
           console.log('cancel')
         })
     },
-    submitForm(formName) {
+    submitForm (formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.remoteRecord()
@@ -215,7 +215,7 @@ export default {
         }
       })
     },
-    async remoteRecord() {
+    async remoteRecord () {
       try {
         if (!this.mobileReg(this.formObj.phone)) {
           this.msgShow(this, '请输入正确的手机号')
@@ -261,11 +261,11 @@ export default {
         console.error(e)
       }
     },
-    resetForm(formName, text = 'kickout') {
+    resetForm (formName, text = 'kickout') {
       this.$refs[formName].resetFields()
       this.kickUser(text)
     },
-    kickUser(text = 'kickout') {
+    kickUser (text = 'kickout') {
       this.lcText(text)
     }
   }
