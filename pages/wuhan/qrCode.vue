@@ -440,25 +440,25 @@ export default {
           this.msgShow(this, '左边温度最多两位小数')
           return
         }
-        if (!this.formObjLeft.id > 0 && this.recordCountLeft > 0) {
+        if (!this.remoteObjLeft.id > 0 && this.recordCountLeft > 0) {
           this.msgShow(this, '左边非法数据，无法提交')
           return
         }
-        this.formObjLeft.hasCouch = this.formObjLeft.hasCouch
-        this.formObjLeft.hasException = this.formObjLeft.hasException
-        this.formObjLeft.remark = this.formObjLeft.remark
-        this.formObjLeft.carNo = this.formObjLeft.carNo
-        this.formObjLeft.temperature = Number(
+        this.remoteObjLeft.hasCouch = this.formObjLeft.hasCouch
+        this.remoteObjLeft.hasException = this.formObjLeft.hasException
+        this.remoteObjLeft.remark = this.formObjLeft.remark
+        this.remoteObjLeft.carNo = this.formObjLeft.carNo
+        this.remoteObjLeft.temperature = Number(
           this.formObjLeft.temperature
         ).toFixed(2)
-        this.formObjLeft.name = this.formObjLeft.name
-        this.formObjLeft.idNo = this.formObjLeft.idNo
-        this.formObjLeft.phone = this.formObjLeft.phone
+        this.remoteObjLeft.name = this.formObjLeft.name
+        this.remoteObjLeft.idNo = this.formObjLeft.idNo
+        this.remoteObjLeft.phone = this.formObjLeft.phone
         const { data } = await this.apiStreamPost(
           '/proxy/common/post',
           {
             url: this.apiList.local.driverRecord,
-            params: this.formObjLeft
+            params: this.remoteObjLeft
           },
           'post'
         )
@@ -466,9 +466,9 @@ export default {
         if (data.return_code === 0) {
           // this.msgShow(this, '签到成功', 'success')
           this.driverQueues = this.driverQueues.filter(
-            itm => itm.openId !== this.formObjLeft.openId
+            itm => itm.openId !== this.remoteObjLeft.openId
           )
-          this.formObjLeft = {}
+          this.remoteObjLeft = {}
           this.resetForm('wuhanFormLeft')
           if (this.driverQueues.length > 0) {
             this.remoteObjLeft = this.driverQueues[0]
@@ -559,8 +559,52 @@ export default {
       }
     },
     resetForm(formName, text = 'kickout') {
+      this.kickUser(text)
       this.$refs[formName].resetFields()
-      // this.kickUser(text)
+      this.$forceUpdate()
+      if (formName === 'wuhanForm') {
+        this.driverQueues = this.driverQueues.filter(
+          itm => itm.openId !== this.remoteObj.openId
+        )
+        this.remoteObj = {}
+        if (this.driverQueues.length > 0) {
+          this.remoteObj = this.driverQueues[0]
+          if (
+            this.remoteObjLeft.openId === this.remoteObj.openId &&
+            this.driverQueues.length > 1
+          )
+            this.remoteObj = this.driverQueues[1]
+          if (
+            this.remoteObjLeft.openId === this.remoteObj.openId &&
+            this.driverQueues.length === 1
+          )
+            this.remoteObj = {}
+          if (this.remoteObj.openId) {
+            this.getDayRecordCount()
+          }
+        }
+      } else {
+        this.driverQueues = this.driverQueues.filter(
+          itm => itm.openId !== this.remoteObjLeft.openId
+        )
+        this.remoteObjLeft = {}
+        if (this.driverQueues.length > 0) {
+          this.remoteObjLeft = this.driverQueues[0]
+          if (
+            this.remoteObjLeft.openId === this.remoteObj.openId &&
+            this.driverQueues.length > 1
+          )
+            this.remoteObjLeft = this.driverQueues[1]
+          if (
+            this.remoteObjLeft.openId === this.remoteObj.openId &&
+            this.driverQueues.length === 1
+          )
+            this.remoteObjLeft = {}
+          if (this.remoteObjLeft.openId) {
+            this.getDayRecordCountLeft()
+          }
+        }
+      }
     },
     kickUser(text = 'kickout') {
       this.lcText(text)
