@@ -1,9 +1,22 @@
 <template lang="pug">
 .wuhan-container.vertical
-  .header
-    .col
-      .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
-        .icon 
+  .left-line
+  .body
+    .ft-20.ft-bold.text-left 登记信息
+    el-form.mt-30(label-width="120px", size="large", :rules="formRules" ,ref="wuhanFormLeft", :model="formObjLeft")
+      el-form-item(:label="item.lbl", v-for="(item,idx) in formArray", :key="idx", :prop="item.key")
+        el-select(v-if="item.type === 'select'", v-model="formObj[item.key]", style="width: 100%")
+          el-option(v-for="(opts, optIdx) in item.selectArr", :label="opts.lbl", :value="opts.val", :key="optIdx")
+        el-input-number.full-width(:disabled="item.disabled", v-else-if="item.type==='number'", v-model="formObjLeft[item.key]", type="number", :min="34.5", :max="45", :step="0.1")
+        el-input(:disabled="item.disabled", v-else, v-model="formObjLeft[item.key]")
+      el-form-item
+        el-button(type="primary", @click="submitForm('wuhanFormLeft')") 提交
+        el-button.ml-15(@click="resetForm('wuhanFormLeft')") 重置
+        //- el-button.ml-15(type="danger", @click="forceExit('wuhanFormLeft')") 强制踢出
+  //- .header
+  //-   .col
+  //-     .qrcode(:style="{backgroundImage: 'url(' + img + ')'}")
+  //-       .icon 
   .body
     .ft-20.ft-bold.text-left 登记信息
     el-form.mt-30(label-width="120px", size="large", :rules="formRules" ,ref="wuhanForm", :model="formObj")
@@ -20,11 +33,20 @@
 <script>
 import { Event } from 'leancloud-realtime'
 export default {
-  data () {
+  data() {
     return {
       img: require('../../static/imgs/qrcode.jpg'),
       numReg: /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/,
       formObj: {
+        name: '',
+        idNo: '',
+        phone: '',
+        temperature: '',
+        hasCouch: '否',
+        hasException: '否',
+        remark: ''
+      },
+      formObjLeft: {
         name: '',
         idNo: '',
         phone: '',
@@ -110,35 +132,160 @@ export default {
         }
       ],
       remoteObj: {},
-      recordCount: 0
+      remoteObjLeft: {},
+      recordCount: 0,
+      recordCountLeft: 0,
+      driverQueues: []
     }
   },
-  beforeMount () {
+  beforeMount() {
     this.remoteLogin()
   },
   methods: {
-    async remoteLogin () {
+    async remoteLogin() {
       try {
         const client = await this.lcLogin()
         client.on(Event.MESSAGE, (message, conv) => {
           console.log('conv message', message)
           if (message.type === -1 && message.from === 'whdriver') {
-            this.remoteObj = JSON.parse(message.text)
-            console.log('remoteObj:>>', this.remoteObj)
-            this.$refs.wuhanForm.resetFields()
-            this.getDayRecordCount()
+            const obj = JSON.parse(message.text)
+            if (obj.openId) {
+              const idx = this.driverQueues.findIndex(
+                itm => itm.openId === obj.openId
+              )
+              if (idx < 0) {
+                if (this.driverQueues.length >= 2) {
+                  this.driverQueues.push(obj)
+                } else {
+                  this.driverQueues.push(obj)
+                  if (this.remoteObj.openId) {
+                    this.remoteObjLeft = obj
+                    this.$refs.wuhanFormLeft.resetFields()
+                    this.getDayRecordCountLeft()
+                  } else {
+                    this.remoteObj = obj
+                    this.$refs.wuhanForm.resetFields()
+                    this.getDayRecordCount()
+                  }
+                }
+              }
+              this.kickUser('signed')
+              console.log('driverQueues:>>', this.driverQueues)
+            }
+            // this.remoteObj = JSON.parse(message.text)
+            // console.log('remoteObj:>>', this.remoteObj)
+            // this.$refs.wuhanForm.resetFields()
+            // this.getDayRecordCount()
           }
         })
       } catch (err) {
         this.msgShow(this, err)
       }
     },
-    async getDayRecordCount () {
+    async getDayRecordCountLeft() {
+      try {
+        const url = this.apiList.local.driverDayRecordCount.replace(
+          '$',
+          this.remoteObjLeft.id
+        )
+        this.setFormInitValue('left')
+        const { data } = await this.apiStreamPost(
+          '/proxy/common/get',
+          {
+            url: url
+          },
+          'get'
+        )
+        console.log('left data', data)
+        this.recordCountLeft = data.count || 0
+        if (data.return_code === 0 && data.count > 0) {
+          await this.apiStreamPost(
+            '/proxy/common/post',
+            {
+              url: this.apiList.local.driverRecord,
+              params: this.remoteObjLeft
+            },
+            'post'
+          )
+          this.confirmDialog(this, this.remoteObjLeft.name + '今天已测过体温')
+            .then(() => {
+              this.driverQueues = this.driverQueues.filter(
+                itm => itm.openId !== this.remoteObjLeft.openId
+              )
+              this.remoteObjLeft = {}
+              if (this.driverQueues.length > 0) {
+                this.remoteObjLeft = this.driverQueues[0]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length > 1
+                )
+                  this.remoteObjLeft = this.driverQueues[1]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length === 1
+                )
+                  this.remoteObjLeft = {}
+                if (this.remoteObjLeft.openId) {
+                  this.resetForm('wuhanFormLeft')
+                  this.setFormInitValue('left')
+                  this.getDayRecordCountLeft()
+                } else {
+                  this.resetForm('wuhanFormLeft')
+                }
+              } else {
+                this.resetForm('wuhanFormLeft')
+              }
+            })
+            .catch(() => {
+              this.driverQueues = this.driverQueues.filter(
+                itm => itm.openId !== this.remoteObjLeft.openId
+              )
+              this.remoteObjLeft = {}
+              if (this.driverQueues.length > 0) {
+                this.remoteObjLeft = this.driverQueues[0]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length > 1
+                )
+                  this.remoteObjLeft = this.driverQueues[1]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length === 1
+                )
+                  this.remoteObjLeft = {}
+                if (this.remoteObjLeft.openId) {
+                  this.resetForm('wuhanFormLeft')
+                  this.setFormInitValue('left')
+                  this.getDayRecordCountLeft()
+                } else {
+                  this.resetForm('wuhanFormLeft')
+                }
+              } else {
+                this.resetForm('wuhanFormLeft')
+              }
+            })
+          // this.msgShow(this, '此人今天已测过体温')
+        } else {
+          this.setFormInitValue('left')
+          // this.formObj.name = this.remoteObj.name
+          // this.formObj.phone = this.remoteObj.phone
+          // this.formObj.idNo = this.remoteObj.idNo
+          // this.formObj.carNo = this.remoteObj.carNo
+        }
+        this.$forceUpdate()
+      } catch (e) {
+        this.setFormInitValue('left')
+        this.recordCountLeft = 0
+        this.$forceUpdate()
+      }
+    },
+    async getDayRecordCount() {
       try {
         const url = this.apiList.local.driverDayRecordCount.replace(
           '$',
           this.remoteObj.id
         )
+        this.setFormInitValue()
         const { data } = await this.apiStreamPost(
           '/proxy/common/get',
           {
@@ -157,28 +304,88 @@ export default {
             },
             'post'
           )
-          this.remoteObj = {}
-          this.kickUser('kickUser')
-          this.confirmDialog(this, '此人今天已测过体温')
-          // this.msgShow(this, '此人今天已测过体温')
+          this.confirmDialog(this, this.remoteObj.name + '今天已测过体温')
+            .then(() => {
+              this.driverQueues = this.driverQueues.filter(
+                itm => itm.openId !== this.remoteObj.openId
+              )
+              this.remoteObj = {}
+              if (this.driverQueues.length > 0) {
+                this.remoteObj = this.driverQueues[0]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length > 1
+                )
+                  this.remoteObj = this.driverQueues[1]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length === 1
+                )
+                  this.remoteObj = {}
+                if (this.remoteObj.openId) {
+                  this.resetForm('wuhanForm')
+                  this.setFormInitValue()
+                  this.getDayRecordCount()
+                } else {
+                  this.resetForm('wuhanForm')
+                }
+              } else {
+                this.resetForm('wuhanForm')
+              }
+            })
+            .catch(() => {
+              this.driverQueues = this.driverQueues.filter(
+                itm => itm.openId !== this.remoteObj.openId
+              )
+              this.remoteObj = {}
+              if (this.driverQueues.length > 0) {
+                this.remoteObj = this.driverQueues[0]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length > 1
+                )
+                  this.remoteObj = this.driverQueues[1]
+                if (
+                  this.remoteObjLeft.openId === this.remoteObj.openId &&
+                  this.driverQueues.length === 1
+                )
+                  this.remoteObj = {}
+                if (this.remoteObj.openId) {
+                  this.resetForm('wuhanForm')
+                  this.setFormInitValue()
+                  this.getDayRecordCount()
+                } else {
+                  this.resetForm('wuhanForm')
+                }
+              } else {
+                this.resetForm('wuhanForm')
+              }
+            })
         } else {
-          this.formObj.name = this.remoteObj.name
-          this.formObj.phone = this.remoteObj.phone
-          this.formObj.idNo = this.remoteObj.idNo
-          this.formObj.carNo = this.remoteObj.carNo
+          this.setFormInitValue()
         }
         this.$forceUpdate()
       } catch (e) {
         console.error(e)
-        this.formObj.name = this.remoteObj.name
-        this.formObj.phone = this.remoteObj.phone
-        this.formObj.idNo = this.remoteObj.idNo
-        this.formObj.carNo = this.remoteObj.carNo
+        this.setFormInitValue()
         this.recordCount = 0
         this.$forceUpdate()
       }
     },
-    forceExit (formName) {
+    setFormInitValue(key) {
+      if (key === undefined) {
+        this.formObj.name = this.remoteObj.name
+        this.formObj.phone = this.remoteObj.phone
+        this.formObj.idNo = this.remoteObj.idNo
+        this.formObj.carNo = this.remoteObj.carNo
+      } else {
+        this.formObjLeft.name = this.remoteObjLeft.name
+        this.formObjLeft.phone = this.remoteObjLeft.phone
+        this.formObjLeft.idNo = this.remoteObjLeft.idNo
+        this.formObjLeft.carNo = this.remoteObjLeft.carNo
+      }
+    },
+    forceExit(formName) {
       const me = this
       this.confirmDialog(
         this,
@@ -205,17 +412,88 @@ export default {
           console.log('cancel')
         })
     },
-    submitForm (formName) {
+    submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.remoteRecord()
+          if (formName === 'wuhanForm') {
+            this.remoteRecord()
+          } else {
+            this.remoteRecordLeft()
+          }
         } else {
           console.log('error submit!!')
           return false
         }
       })
     },
-    async remoteRecord () {
+    async remoteRecordLeft() {
+      try {
+        if (!this.mobileReg(this.formObjLeft.phone)) {
+          this.msgShow(this, '左边请输入正确的手机号')
+          return
+        }
+        if (!this.idNoReg(this.formObjLeft.idNo)) {
+          this.msgShow(this, '左边请输入正确身份证号')
+          return
+        }
+        if (!this.numReg.test(this.formObjLeft.temperature)) {
+          this.msgShow(this, '左边温度最多两位小数')
+          return
+        }
+        if (!this.formObjLeft.id > 0 && this.recordCountLeft > 0) {
+          this.msgShow(this, '左边非法数据，无法提交')
+          return
+        }
+        this.formObjLeft.hasCouch = this.formObjLeft.hasCouch
+        this.formObjLeft.hasException = this.formObjLeft.hasException
+        this.formObjLeft.remark = this.formObjLeft.remark
+        this.formObjLeft.carNo = this.formObjLeft.carNo
+        this.formObjLeft.temperature = Number(
+          this.formObjLeft.temperature
+        ).toFixed(2)
+        this.formObjLeft.name = this.formObjLeft.name
+        this.formObjLeft.idNo = this.formObjLeft.idNo
+        this.formObjLeft.phone = this.formObjLeft.phone
+        const { data } = await this.apiStreamPost(
+          '/proxy/common/post',
+          {
+            url: this.apiList.local.driverRecord,
+            params: this.formObjLeft
+          },
+          'post'
+        )
+        console.log('data', data)
+        if (data.return_code === 0) {
+          // this.msgShow(this, '签到成功', 'success')
+          this.driverQueues = this.driverQueues.filter(
+            itm => itm.openId !== this.formObjLeft.openId
+          )
+          this.formObjLeft = {}
+          this.resetForm('wuhanFormLeft')
+          if (this.driverQueues.length > 0) {
+            this.remoteObjLeft = this.driverQueues[0]
+            if (
+              this.remoteObjLeft.openId === this.remoteObj.openId &&
+              this.driverQueues.length > 1
+            )
+              this.remoteObjLeft = this.driverQueues[1]
+            if (
+              this.remoteObjLeft.openId === this.remoteObj.openId &&
+              this.driverQueues.length === 1
+            )
+              this.remoteObjLeft = {}
+            if (this.remoteObjLeft.openId) {
+              this.getDayRecordCountLeft()
+            }
+          }
+        } else {
+          this.msgShow(this, data.errMsg)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    async remoteRecord() {
       try {
         if (!this.mobileReg(this.formObj.phone)) {
           this.msgShow(this, '请输入正确的手机号')
@@ -251,9 +529,28 @@ export default {
         )
         console.log('data', data)
         if (data.return_code === 0) {
-          this.msgShow(this, '签到成功', 'success')
+          // this.msgShow(this, '签到成功', 'success')
+          this.driverQueues = this.driverQueues.filter(
+            itm => itm.openId !== this.remoteObj.openId
+          )
           this.remoteObj = {}
           this.resetForm('wuhanForm', 'signed')
+          if (this.driverQueues.length > 0) {
+            this.remoteObj = this.driverQueues[0]
+            if (
+              this.remoteObjLeft.openId === this.remoteObj.openId &&
+              this.driverQueues.length > 1
+            )
+              this.remoteObj = this.driverQueues[1]
+            if (
+              this.remoteObjLeft.openId === this.remoteObj.openId &&
+              this.driverQueues.length === 1
+            )
+              this.remoteObj = {}
+            if (this.remoteObj.openId) {
+              this.getDayRecordCount()
+            }
+          }
         } else {
           this.msgShow(this, data.errMsg)
         }
@@ -261,11 +558,11 @@ export default {
         console.error(e)
       }
     },
-    resetForm (formName, text = 'kickout') {
+    resetForm(formName, text = 'kickout') {
       this.$refs[formName].resetFields()
-      this.kickUser(text)
+      // this.kickUser(text)
     },
-    kickUser (text = 'kickout') {
+    kickUser(text = 'kickout') {
       this.lcText(text)
     }
   }
@@ -278,6 +575,14 @@ export default {
   width 100%
   overflow hidden
   height 100vh
+  position relative
+  .left-line
+    position absolute
+    left 50vw
+    top 10vh
+    width 2px
+    height 80vh
+    background #409EFF
   &.vertical
     display flex
     align-items center
