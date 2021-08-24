@@ -2,7 +2,7 @@ import Vue from 'vue'
 import httpUtil from '../utils/httpUtil'
 import elementUtil from '../utils/elmtUtil'
 import apiList from '../utils/apiList'
-import lcUtil from '../utils/lc'
+// import lcUtil from '../utils/lc'
 
 function formatNumber(n) {
   n = n.toString()
@@ -189,10 +189,10 @@ const minixs = {
     idNoReg(val) {
       const reg = /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/
       return reg.test(val)
-    },
+    }
     // leanclound
-    lcLogin: lcUtil.login,
-    lcText: lcUtil.sendTextMsg
+    // lcLogin: lcUtil.login,
+    // lcText: lcUtil.sendTextMsg
   }
 }
 Vue.mixin(minixs)
