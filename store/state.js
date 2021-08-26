@@ -41,6 +41,20 @@ export default {
           url: '/quan/list'
         }
       ]
+    },
+    {
+      title: '评价管理',
+      iconClass: 'el-icon-postcard',
+      subItems: [
+        {
+          title: '评价设置',
+          url: '/appraise/set'
+        },
+        {
+          title: '评价统计',
+          url: '/appraise/list'
+        }
+      ]
     }
   ]
 }

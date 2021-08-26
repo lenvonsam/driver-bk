@@ -2,16 +2,38 @@
 div
   div
     el-button-group.mb-15(v-if="tableValue.actions && tableValue.actions.length > 0")
-      el-button(v-for="(btn, idx) in tableValue.actions", :key="idx", :type="btn.class || 'default'", @click="actionBtnClick(btn.type)", :size="btn.size ? btn.size : 'medium'") {{btn.lbl}}
+      template(v-for="(btn, idx) in tableValue.actions")
+        template(v-if="btn.type == 'export'")
+          // el-button(:type="btn.class || 'default'", :size="btn.size ? btn.size : 'medium'")
+          download-excel.download-excel-style(:data="jsonData" :fields="jsonFields" :name="getJsonName")
+            span {{btn.lbl}}
+        template(v-else)
+          el-button(:type="btn.class || 'default'", @click="actionBtnClick(btn.type)", :size="btn.size ? btn.size : 'medium'") {{btn.lbl}}
     .float-right(v-if="rightPart")
       slot(name="right-part")
         el-input(size="medium", placeholder="搜索", v-model="searchVal")
           template(slot="append")
             el-button(icon="el-icon-search", @click="rightTopSearch", style="border-right: 1px solid #ddd")
             el-button(icon="el-icon-refresh", @click="rightTopReset")
+  .searchArea(v-if="searchArea")
+    el-form
+      el-row
+        el-col(:span="6")
+          el-form-item(label="库区：")
+            el-select(v-model="selectWarehouse" placeholder="请选择" size="small" @change="selectChange")
+              el-option(v-for="item in tableValue.warehouses" :key="item.value" :label="item.label" :value="item.value")
+        el-col(:span="7")
+          el-form-item(label="结束日期：")
+            el-date-picker(v-model="startDate" value-format="yyyy-MM-dd", format="yyyy-MM-dd", size="small", @change="startDateChange")
+        el-col(:span="7")
+          el-form-item(label="结束日期：")
+            el-date-picker(v-model="endDate" value-format="yyyy-MM-dd", format="yyyy-MM-dd", size="small", @change="endDateChange")
+        el-col(:span="4")
+          el-button(type="primary", @click="search", size="small", style="margin-top:4px;") 搜索
   slot(name="searchPart")
-  el-table(ref="multipleTable", :data="currentData", v-loading="loading", style="width: 100%", border, @selection-change="handleSelectionChange", @current-change="handleCurrentChange", :default-sort="{order: 'descending'}", size="medium", :filter-change="tableFiler", @sort-change="sortChange")
-    el-table-column(v-if="tableValue.hasCbx", type="selection", width="55")    
+  el-table(ref="multipleTable", :data="currentData", v-loading="loading", style="width: 100%", border, @selection-change="handleSelectionChange", @current-change="handleCurrentChange", :default-sort="{order: 'descending'}", size="medium", :filter-change="tableFiler", @sort-change="sortChange", highlight-current-row)
+    el-table-column(type="index" width="80" label="序号")
+    el-table-column(v-if="tableValue.hasCbx", type="selection", width="55")
     template(v-for="head in tableValue.tableHead")
       el-table-column(v-if="head.type == 'link'", :label="head.lbl", :width="head.width ? head.width : 'auto'", :min-width="head.minWidth? head.minWidth : 'auto'")
         template(slot-scope="scope")
@@ -28,17 +50,17 @@ div
       el-table-column(v-else-if="head.type == 'enum'", :label="head.lbl", :width="head.width? head.width : 'auto'")
         template(slot-scope="scope")
           span {{head.enumMap[scope.row[head.prop]]}}
-      el-table-column(v-else-if="head.type == 'action'", :align="head.align ? head.align : 'left'" :fixed="head.fixed", label="操作", :width="head.width ? head.width : 'auto'", :min-width="head.minWidth? head.minWidth : 'auto'")
+      el-table-column(v-else-if="head.type == 'action'", :align="head.align ? head.align : 'left'" :fixed="head.fixed", :label="head.lbl || '操作'", :width="head.width ? head.width : 'auto'", :min-width="head.minWidth? head.minWidth : 'auto'")
         template(slot-scope="scope")
           template(v-for="btn in head.actionBtns")
-            el-button(type="text", :class="btn.class ? btn.class : 'default'", @click="handleRowBtn(scope.$index, scope.row, btn.type)", v-if="showRowBtn(btn, scope.row)") {{btn.lbl}}
-      el-table-column(v-else-if="head.type == 'date'", :label="head.lbl", :prop="head.prop")
+            el-button(type="text", :type="btn.class ? btn.class : 'default'", :size="btn.size ? btn.size : 'small'" @click.stop="handleRowBtn(scope.$index, scope.row, btn.type)", v-if="showRowBtn(btn, scope.row)") {{btn.lbl}}
+      el-table-column(v-else-if="head.type == 'date'", :label="head.lbl", :prop="head.prop", :width="head.width ? head.width : 'auto'")
         template(slot-scope="scope")
           span {{date2Str(scope.row[head.prop])}}
-      el-table-column(v-else-if="head.type == 'datetime'", :label="head.lbl", :prop="head.prop")
+      el-table-column(v-else-if="head.type == 'datetime'", :label="head.lbl", :prop="head.prop", , :width="head.width ? head.width : 'auto'")
         template(slot-scope="scope")
           span {{date2Time(scope.row[head.prop])}}
-      el-table-column(v-else, :label="head.lbl", :prop="head.prop")
+      el-table-column(v-else, :label="head.lbl", :prop="head.prop", :align="head.align ? head.align : 'left'", :width="head.width ? head.width : 'auto'")
   .padding.text-right(v-if="!tableValue.footerHide")
     el-pagination(:current-page="currentPage", :page-size="pageSize", background, layout="prev, pager, next, jumper", :total="total", @current-change="pgCurrentChange")
   el-dialog(:visible="previewShow", @close="previewShow = false", append-to-body)
@@ -47,6 +69,8 @@ div
 
 <script>
 import { mapState } from 'vuex'
+import moment from 'moment'
+
 export default {
   props: {
     tableValue: {
@@ -72,10 +96,29 @@ export default {
     rightPart: {
       type: Boolean,
       default: true
+    },
+    searchArea: {
+      type: Boolean,
+      default: false
+    },
+    jsonFields: {
+      type: Object,
+      default: () => {}
+    },
+    jsonData: {
+      type: Array,
+      default: () => []
+    },
+    jsonName: {
+      type: String,
+      default: ''
     }
   },
   data() {
     return {
+      selectWarehouse: '',
+      startDate: '',
+      endDate: '',
       currentData: [],
       regionOptions: [],
       supplyCatalogOptions: [],
@@ -106,7 +149,27 @@ export default {
       this.currentData = Object.assign([], this.tableValue.tableData)
     })
   },
+  computed: {
+    getJsonName: function() {
+      return this.jsonName + moment(new Date()).format('YYYYMMDDHHmmss') + '.xls'
+    }
+  },
   methods: {
+    selectChange(value) {
+      this.$emit('selectChange', value)
+    },
+    startDateChange(value) {
+      this.$emit('startDateChange', value)
+    },
+    endDateChange(value) {
+      this.$emit('endDateChange', value)
+    },
+    search(){
+      this.$emit('search')
+    },
+    downloadImg(link_id) {
+      this.$emit('downloadImg', link_id)
+    },
     showRowBtn(btnObj, rowObj) {
       if (btnObj.showBtn) {
         return btnObj.showBtn(rowObj)
@@ -128,7 +191,7 @@ export default {
       this.$emit('chooseData', rows)
     },
     handleCurrentChange(row) {
-      this.$emit('chooseData', row)
+      this.$emit('handleCurrentChange', row)
     },
     pgCurrentChange(val) {
       this.$emit('pageChange', val)
@@ -162,6 +225,11 @@ export default {
 <style lang="stylus" scoped>
 @import '../assets/stylus/color';
 
+.download-excel-style
+  padding 8px 16px
+  color #fff
+  border-radius 4px
+  background-color #409EFF
 .el-table__row {
   .cell {
     a {

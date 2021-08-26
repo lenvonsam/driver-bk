@@ -13,8 +13,9 @@ const app = express()
 const hptl = require('../utils/httpUtil')
 
 // const proxyUrl = 'http://localhost:6889/'
-const proxyUrl = 'http://192.168.80.99:8080/driver-bk/'
+// const proxyUrl = 'http://192.168.80.99:8080/driver-bk/'
 // const proxyUrl = 'http://appadmin-test.xingyun361.com/driver-bk/'
+const proxyUrl = 'http://192.168.80.210:6889/'
 
 router.use((req, res, next) => {
   Object.setPrototypeOf(req, app.request)
@@ -78,36 +79,6 @@ router.post('/fileUpload', multipartMiddleware, (req, res) => {
   )
 })
 
-router.post('/common/post', (req, res) => {
-  const body = req.body
-  console.log('----------1', body)
-  hptl.httpPost(proxyUrl + body.url, body.params).then(
-    ({ data }) => {
-      // req.session.currentUser = currentUser
-      console.log('post data:>>', data)
-      res.json(data)
-    },
-    err => {
-      console.log(err)
-      res.json({ return_code: -1, msg: '网络异常' })
-    }
-  )
-})
-
-router.post('/common/put', (req, res) => {
-  const body = req.body
-  console.log(body)
-  hptl.httpPut(proxyUrl + body.url, body.params).then(
-    ({ data }) => {
-      res.json(data)
-    },
-    err => {
-      console.log(err)
-      res.json({ return_code: -1, msg: '网络异常' })
-    }
-  )
-})
-
 router.post('/common/get', (req, res) => {
   const body = req.body
   const paramsArr = []
@@ -126,9 +97,37 @@ router.post('/common/get', (req, res) => {
   )
 })
 
-router.post('/common/del', (req, res) => {
+router.post('/common/post', (req, res) => {
   const body = req.body
-  hptl.httpDelete(proxyUrl + body.url, body.params).then(
+  hptl.httpPost(proxyUrl + body.url, body.params).then(
+    ({ data }) => {
+      // req.session.currentUser = currentUser
+      console.log('post data:>>', data)
+      res.json(data)
+    },
+    err => {
+      console.log(err)
+      res.json({ return_code: -1, msg: '网络异常' })
+    }
+  )
+})
+
+router.put('/common/put', (req, res) => {
+  const query = req.query
+  hptl.httpPut(proxyUrl + query.url, query.params).then(
+    ({ data }) => {
+      res.json(data)
+    },
+    err => {
+      console.log(err)
+      res.json({ return_code: -1, msg: '网络异常' })
+    }
+  )
+})
+
+router.delete('/common/del', (req, res) => {
+  const query = req.query
+  hptl.httpDelete(proxyUrl + query.url, req.params).then(
     ({ data }) => {
       res.json(data)
     },

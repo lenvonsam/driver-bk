@@ -113,6 +113,8 @@ const minixs = {
     },
     apiGet: httpUtil.httpGet,
     apiPost: httpUtil.httpPost,
+    apiDelete: httpUtil.httpDelete,
+    apiPut: httpUtil.httpPut,
     apiStreamPost: httpUtil.httpStreamPost,
     pageShow: elementUtil.pageShow,
     pageHide: elementUtil.pageHide,

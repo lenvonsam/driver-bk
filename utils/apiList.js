@@ -13,6 +13,12 @@ export default {
     // 签到记录
     driverRecord: '/api/wuhan/driver/record',
     // 当天签到记录
-    driverDayRecordCount: '/api/wuhan/$/driver/recordDayCount'
+    driverDayRecordCount: '/api/wuhan/$/driver/recordDayCount',
+    // 仓库评价设置新增或修改 / 库区评价设置列表
+    commentConfig: 'api/warehouse/comment/config',
+    // 仓库评价配置删除 / 仓库评价配置详情
+    comment: 'api/warehouse/comment/',
+    // 司机仓库评价列表 / 司机库区评价操作
+    driverComment: 'api/driver/comment/warehouse'
   }
 }

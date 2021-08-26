@@ -40,11 +40,20 @@ const obj = {
       }
     })
   },
+  httpPost(url, body) {
+    console.log('post', url, body)
+    return obj.commonHttp('post', url, body)
+  },
   httpPut(url, body) {
+    console.log('put', url, body)
     return obj.commonHttp('put', url, body)
   },
-  httpPost(url, body) {
-    return obj.commonHttp('post', url, body)
+  httpDelete(url, body) {
+    console.log('delete', url, body)
+    return obj.commonHttp('delete', url, body)
+  },
+  httpStreamPost(url, body) {
+    return axios.post(url, body)
   },
   httpPostForm(url, body) {
     return axios({
@@ -59,12 +68,6 @@ const obj = {
         return Qs.stringify(params, { arrayFormat: 'brackets' })
       }
     })
-  },
-  httpDelete(url, body) {
-    return obj.commonHttp('delete', url, body)
-  },
-  httpStreamPost(url, body) {
-    return axios.post(url, body)
   }
 }
 

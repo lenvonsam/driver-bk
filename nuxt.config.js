@@ -32,7 +32,9 @@ module.exports = {
   plugins: [
     { src: '@/plugins/element-ui' },
     '@/plugins/mixins',
-    '@/plugins/global'
+    '@/plugins/global',
+    { src: '~/plugins/vue-json-excel.js', ssr: false },
+    { src: '~/plugins/qrcodejs2.js', ssr: false }
   ],
 
   /*
@@ -66,14 +68,14 @@ module.exports = {
      */
     extend(config, ctx) {
       // Run ESLint on save
-      if (ctx.isDev && ctx.isClient) {
-        config.module.rules.push({
-          enforce: 'pre',
-          test: /\.(js|vue)$/,
-          loader: 'eslint-loader',
-          exclude: /(node_modules)/
-        })
-      }
+      // if (ctx.isDev && ctx.isClient) {
+      //   config.module.rules.push({
+      //     enforce: 'pre',
+      //     test: /\.(js|vue)$/,
+      //     loader: 'eslint-loader',
+      //     exclude: /(node_modules)/
+      //   })
+      // }
     }
   }
 }
