@@ -23,7 +23,6 @@
 </template>
 
 <script>
-
 export default {
   layout: 'main',
   data() {
@@ -146,7 +145,7 @@ export default {
       console.log(value)
       this.endTime = value
     },
-    search(){
+    search() {
       this.loadData()
     },
 
@@ -170,13 +169,13 @@ export default {
         const { data } = await this.apiStreamPost(
           '/proxy/common/get',
           {
-            url: this.apiList.local.commentConfig,
+            url: this.apiList.local.commentConfig
           },
           'get'
         )
         if (data.return_code === 0) {
-          let list = data.list
-          if(list.length) {
+          const list = data.list
+          if (list.length) {
             list.unshift({
               id: '',
               areaName: '全部'
@@ -188,7 +187,6 @@ export default {
               }
             })
           }
-
         } else {
           this.msgShow(this, data.msg)
         }
@@ -201,29 +199,26 @@ export default {
       try {
         this.pageShow(this, '处理中..')
         // const body = Object.assign({}, this.warehouse)
-        let params = {
+        const params = {
           cid: this.cid,
           startTime: this.startTime,
           endTime: this.endTime,
           currentPage: 0,
           pageSize: 10
         }
-        if(!this.cid) {
+        if (!this.cid) {
           delete params.cid
         }
-        if(!this.startTime) {
+        if (!this.startTime) {
           delete params.startTime
         }
-        if(!this.endTime) {
+        if (!this.endTime) {
           delete params.endTime
         }
-        const { data } = await this.apiStreamPost(
-          '/proxy/common/get',
-          {
-            url: this.apiList.local.driverComment,
-            params: params
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/get', {
+          url: this.apiList.local.driverComment,
+          params: params
+        })
         this.pageHide(this)
         if (data.return_code === 0) {
           this.tableValue.tableData = data.list
@@ -239,36 +234,33 @@ export default {
     },
     async getExcelData(total) {
       try {
-        let params = {
+        const params = {
           cid: this.cid,
           startTime: this.startTime,
           endTime: this.endTime,
           currentPage: 0,
           pageSize: total
         }
-        if(!this.cid) {
+        if (!this.cid) {
           delete params.cid
         }
-        if(!this.startTime) {
+        if (!this.startTime) {
           delete params.startTime
         }
-        if(!this.endTime) {
+        if (!this.endTime) {
           delete params.endTime
         }
-        const { data } = await this.apiStreamPost(
-          '/proxy/common/get',
-          {
-            url: this.apiList.local.driverComment,
-            params: params
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/get', {
+          url: this.apiList.local.driverComment,
+          params: params
+        })
         if (data.return_code === 0) {
           console.log('excel数据', data.list)
           this.jsonData = data.list
         } else {
           this.msgShow(this, data.msg)
         }
-      } catch (e){
+      } catch (e) {
         this.msgShow(this, e.message || '网络异常')
       }
     }

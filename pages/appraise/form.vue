@@ -63,12 +63,9 @@ export default {
   methods: {
     async getWarehouseInfo() {
       try {
-        const { data } = await this.apiStreamPost(
-          '/proxy/common/get',
-          {
-            url: this.apiList.local.comment + this.$route.query.id
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/get', {
+          url: this.apiList.local.comment + this.$route.query.id
+        })
         if (data.return_code === 0) {
           console.log(data)
           this.warehouse.name = data.obj.areaName
@@ -101,7 +98,7 @@ export default {
           leaderPhone: this.warehouse.phone,
           mainProduct: this.warehouse.product
         }
-        if(this.routeType == 'edit') {
+        if (this.routeType === 'edit') {
           params = {
             id: this.$route.query.id,
             areaName: this.warehouse.name,
@@ -110,13 +107,10 @@ export default {
             mainProduct: this.warehouse.product
           }
         }
-        const { data } = await this.apiStreamPost(
-          '/proxy/common/post',
-          {
-            url: this.apiList.local.commentConfig,
-            params: params
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/post', {
+          url: this.apiList.local.commentConfig,
+          params: params
+        })
         this.pageHide(this)
         if (data.return_code === 0) {
           this.msgShow(

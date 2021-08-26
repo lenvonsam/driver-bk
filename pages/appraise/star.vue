@@ -48,7 +48,7 @@
 <script>
 export default {
   head() {
-    return{
+    return {
       title: this.warehouseName + '门评价'
     }
   },
@@ -63,69 +63,75 @@ export default {
       starService: 0,
       starFee: 0,
       starPositive: 0,
-      appId: "wxb1a990032d59f1d4",
+      appId: 'wxb1a990032d59f1d4',
       userAuth: false,
       wxObj: {}
     }
   },
   computed: {
     averageScore: function() {
-      return ((this.starOutIn + this.starSpeed + this.starService + this.starFee + this.starPositive)/5)
+      return (
+        (this.starOutIn +
+          this.starSpeed +
+          this.starService +
+          this.starFee +
+          this.starPositive) /
+        5
+      )
     }
   },
   beforeMount() {
     console.log(window.location.href, this.$route.query.id)
     this.getWarehouseInfo()
 
-    this.wxObj = JSON.parse(localStorage.getItem("wxUser") || "{}");
-    this.userAuth = !!this.wxObj.openId;
+    this.wxObj = JSON.parse(localStorage.getItem('wxUser') || '{}')
+    this.userAuth = !!this.wxObj.openId
 
-    //根据code请求接口，获取用户信息
-    var code = this.getQueryString('code')
+    // 根据code请求接口，获取用户信息
+    const code = this.getQueryString('code')
     if (code) {
       this.getWxUserInfo(code)
     }
 
-    //判断是否登陆并防止多次执行
-    if(!code && !localStorage.getItem('wxUser')){
-      var wxUrl = window.location.href.split('#')[0]
-      var pageUrl = encodeURIComponent(wxUrl)
-      window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid="+ this.appId + "&redirect_uri=" + pageUrl + "&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect"
+    // 判断是否登陆并防止多次执行
+    if (!code && !localStorage.getItem('wxUser')) {
+      const wxUrl = window.location.href.split('#')[0]
+      const pageUrl = encodeURIComponent(wxUrl)
+      window.location.href =
+        'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' +
+        this.appId +
+        '&redirect_uri=' +
+        pageUrl +
+        '&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect'
     }
   },
   methods: {
     getQueryString(name) {
-      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-      var r = window.location.search.substr(1).match(reg);
-      if (r != null) return unescape(r[2]);
-      return null;
+      const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i')
+      const r = window.location.search.substr(1).match(reg)
+      if (r != null) return unescape(r[2])
+      return null
     },
     async getWxUserInfo(code) {
       try {
-        const { data } = await me.apiStreamPost(
-          '/proxy/common/post',
-          {
-            url: "http://scp-dev.xingyun361.com/api/wechat/auth/oauth",
-            code: code,
-            appKey: "xingYun"
-          }
-        )
-        alert("data:>>", data)
+        const { data } = await this.apiStreamPost('/proxy/common/post', {
+          url: 'http://scp-dev.xingyun361.com/api/wechat/auth/oauth',
+          code: code,
+          appKey: 'xingYun'
+        })
+        alert('data:>>', data)
         this.wxObj = data.obj
-        localStorage.setItem("wxUser", JSON.stringify(this.wxObj))
+        localStorage.setItem('wxUser', JSON.stringify(this.wxObj))
         this.userAuth = true
       } catch (e) {
-        this.msgShow(this, data.msg)
+        this.msgShow(this, e.message || '网络异常')
       }
     },
     async getWarehouseInfo() {
       try {
-        const { data } = await this.apiStreamPost(
-          '/proxy/common/get',
-          {
-            url: this.apiList.local.comment + this.$route.query.id
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/get', {
+          url: this.apiList.local.comment + this.$route.query.id
+        })
         if (data.return_code === 0) {
           console.log(data)
           this.warehouseName = data.obj.areaName
@@ -142,7 +148,7 @@ export default {
       try {
         this.pageShow(this, '处理中..')
         // const body = Object.assign({}, this.warehouse)
-        let params = {
+        const params = {
           id: 1,
           nickName: this.wxObj.nickname,
           openId: this.wxObj.openId,
@@ -153,20 +159,13 @@ export default {
           starFee: this.starFee,
           starPositive: this.starPositive
         }
-        const {data}  = await this.apiStreamPost(
-          '/proxy/common/post',
-          {
-            url: this.apiList.local.driverComment,
-            params: params
-          }
-        )
+        const { data } = await this.apiStreamPost('/proxy/common/post', {
+          url: this.apiList.local.driverComment,
+          params: params
+        })
         this.pageHide(this)
         if (data.return_code === 0) {
-          this.msgShow(
-            this,
-            '提交成功',
-            'success'
-          )
+          this.msgShow(this, '提交成功', 'success')
           this.jump('/appraise/list')
         } else {
           this.msgShow(this, data.errMsg)
@@ -181,19 +180,17 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-  .star
-    height 100vh
-    width 100vw
-    background-color #f4f4f4
-    .height
-      height 24px
-    /deep/ .el-rate__icon
-      font-size: 24px
-    /deep/ .el-rate__text
-      font-size: 22px
-      margin-left 10px
-    .text-orange
-      color #FF5809
-
+.star
+  height 100vh
+  width 100vw
+  background-color #f4f4f4
+  .height
+    height 24px
+  /deep/ .el-rate__icon
+    font-size 24px
+  /deep/ .el-rate__text
+    font-size 22px
+    margin-left 10px
+  .text-orange
+    color #FF5809
 </style>
-

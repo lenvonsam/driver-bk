@@ -94,26 +94,28 @@ export default {
   methods: {
     rowEdit(idx, row, btnType) {
       console.log(idx, row, btnType)
-      let qrcode = new this.QRCode('qrcode', {
+      const qrcode = new this.QRCode('qrcode', {
         width: 132,
         height: 132,
         text: `http://172.16.16.234:8000/appraise/star?id=${row.id}`, // 二维码地址
-        colorDark: "#000",
-        colorLight: "#fff",
+        colorDark: '#000',
+        colorLight: '#fff'
       })
-      let myCanvas = document.getElementById('qrcode').getElementsByTagName('canvas');
-      let a = document.createElement('a')
-      a.href = myCanvas[0].toDataURL('image/png');
-      a.download = `二维码-${row.areaLeader}-${row.areaName}`;
+      const myCanvas = document
+        .getElementById('qrcode')
+        .getElementsByTagName('canvas')
+      const a = document.createElement('a')
+      a.href = myCanvas[0].toDataURL('image/png')
+      a.download = `二维码-${row.areaLeader}-${row.areaName}`
       a.click()
       this.$message({
-        message: "正在下载保存",
+        message: '正在下载保存',
         type: 'success'
       })
     },
-    handleCurrentChange(row){
+    handleCurrentChange(row) {
       console.log(row)
-      if(row) {
+      if (row) {
         this.currentChooseId = row.id
       }
     },
@@ -131,23 +133,25 @@ export default {
         } else {
           this.jump('/appraise/form?type=edit&id=' + this.currentChooseId)
         }
+      } else if (!this.currentChooseId) {
+        this.msgShow(this, '请选择要删除的库区')
       } else {
-        if (!this.currentChooseId) {
-          this.msgShow(this, '请选择要删除的库区')
-        } else {
-          this.deleteItem(this.currentChooseId)
-        }
+        this.deleteItem(this.currentChooseId)
       }
     },
     async deleteItem(id) {
       try {
-        const { data } = await this.apiDelete('/proxy/common/del',{ url: this.apiList.local.comment + id})
+        const { data } = await this.apiDelete('/proxy/common/del', {
+          url: this.apiList.local.comment + id
+        })
         if (data.return_code === 0) {
           this.msgShow(this, '删除成功', 'success')
           this.currentChooseId = null
-          const currentChooseIndex = this.tableValue.tableData.findIndex(item => {
-            return item.id == id
-          })
+          const currentChooseIndex = this.tableValue.tableData.findIndex(
+            item => {
+              return item.id == id
+            }
+          )
           this.tableValue.tableData.splice(currentChooseIndex, 1)
         } else {
           this.msgShow(this, data.msg)
@@ -162,7 +166,7 @@ export default {
         const { data } = await this.apiStreamPost(
           '/proxy/common/get',
           {
-            url: this.apiList.local.commentConfig,
+            url: this.apiList.local.commentConfig
           },
           'get'
         )

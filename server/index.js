@@ -39,6 +39,9 @@ async function start() {
   app.use(bodyParser.json())
   app.use('/proxy', proxyRoute)
   // Give nuxt middleware to express
+  app.get('/MP_verify_4vvERZyihOrDDGOh.txt', (req, res) => {
+    res.send('4vvERZyihOrDDGOh')
+  })
   app.use(nuxt.render)
 
   // Listen the server
